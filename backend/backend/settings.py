@@ -308,6 +308,8 @@ SOCIALACCOUNT_ADAPTER = 'users.adapters.MySocialAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True  # Allow automatic signup via social login
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'optional'  # Don't force email verification for social accounts
 SOCIALACCOUNT_QUERY_EMAIL = True  # Enable querying email from social provider
+SOCIALACCOUNT_EMAIL_AUTHENTICATION=True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT=True
 
 # Email Configuration
 # Control email sending with ENABLE_EMAIL environment variable
