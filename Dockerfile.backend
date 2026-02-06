@@ -68,7 +68,6 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Expose port
 EXPOSE 8000
 
-# Run migrations and start supervisord as django user
+# Run as django user
 USER django
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py update_site_domain && python manage.py collectstatic --noinput && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]
