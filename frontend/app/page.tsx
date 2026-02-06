@@ -310,7 +310,7 @@ export default function Home() {
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="https://github.com/anthropics/fnbox" target="_blank">
+                  <Link href="https://github.com/fish-not-phish/fnbox" target="_blank">
                     <Button size="lg" variant="outline" className="min-w-[180px] h-12 text-base cursor-pointer">
                       View on GitHub
                     </Button>

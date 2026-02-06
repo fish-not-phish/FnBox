@@ -81,8 +81,9 @@ prompt_yes_no() {
 }
 
 # Function to generate SECRET_KEY (no Django required)
+# Uses only alphanumeric characters + hyphens/underscores to avoid shell interpretation issues
 generate_secret_key() {
-    python3 -c "import secrets, string; chars = string.ascii_letters + string.digits + string.punctuation.replace('\"', '').replace(\"'\", '').replace('\\\\', ''); print(''.join(secrets.choice(chars) for _ in range(50)))"
+    python3 -c "import secrets, string; chars = string.ascii_letters + string.digits + '-_'; print(''.join(secrets.choice(chars) for _ in range(50)))"
 }
 
 # Function to validate email

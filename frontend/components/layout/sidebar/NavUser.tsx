@@ -34,7 +34,7 @@ export const NavUser = () => {
 
   const handleLogout = () => {
     // Redirect to Django allauth logout
-    window.location.href = "http://127.0.0.1:8000/accounts/logout/";
+    window.location.href = `${process.env.NEXT_PUBLIC_BASE_URL_ACCOUNTS}accounts/logout/`;
   };
 
   return (
