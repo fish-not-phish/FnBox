@@ -456,9 +456,15 @@ USER_GID=${USER_GID}
 
 # Host IP for Kubernetes API access from containers
 HOST_IP=${HOST_IP}
+
+# Database credentials (needed for postgres container initialization)
+DB_NAME=${DB_NAME}
+DB_USER=${DB_USER}
+DB_PASSWORD=${DB_PASSWORD}
 EOF
 
 print_success ".env created with UID=${USER_UID}, GID=${USER_GID}, HOST_IP=${HOST_IP}"
+print_success "Database credentials added: DB_NAME=${DB_NAME}, DB_USER=${DB_USER}"
 
 echo ""
 
