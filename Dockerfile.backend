@@ -1,0 +1,74 @@
+# ================================
+# Production-Ready Django Backend
+# ================================
+# Multi-stage build with supervisord for Django + Celery
+# Runs as non-root user for security
+
+FROM python:3.12-slim AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install Python dependencies
+COPY backend/requirements.txt /tmp/
+RUN pip install --no-cache-dir -r /tmp/requirements.txt gunicorn supervisor
+
+
+# ================================
+# Final production image
+# ================================
+FROM python:3.12-slim
+
+# Accept build args for user UID/GID
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    supervisor \
+    curl \
+    && curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+    && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl \
+    && rm kubectl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user with host-matching UID/GID
+RUN groupadd -g ${USER_GID} django && useradd -r -u ${USER_UID} -g django -m django
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=django:django backend/ /app/
+
+# Create required directories with correct permissions
+RUN mkdir -p /app/static /app/media /app/logs /var/log/supervisor /home/django/.kube && \
+    chown -R django:django /app /var/log/supervisor /home/django
+
+# Copy supervisord configuration
+COPY --chown=django:django backend/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy and configure entrypoint script
+COPY backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Expose port
+EXPOSE 8000
+
+# Run migrations and start supervisord as django user
+USER django
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py update_site_domain && python manage.py collectstatic --noinput && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"]

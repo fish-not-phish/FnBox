@@ -1,0 +1,110 @@
+services:
+  # PostgreSQL Database
+  fnbox-postgres:
+    image: postgres:15-alpine
+    container_name: fnbox-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fnbox}
+      POSTGRES_USER: ${DB_USER:-fnbox}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-fnbox}
+    volumes:
+      - fnbox_postgres_data:/var/lib/postgresql/data
+    networks:
+      - fnbox-network
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fnbox}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  fnbox-redis:
+    image: redis:7-alpine
+    container_name: fnbox-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - fnbox_redis_data:/data
+    networks:
+      - fnbox-network
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Backend (with Celery via supervisord)
+  fnbox-backend:
+    image: fnbox-backend:latest
+    container_name: fnbox-backend
+    user: "${USER_UID:-1000}:${USER_GID:-1000}"
+    env_file:
+      - backend/.env
+    environment:
+      DB_HOST: fnbox-postgres
+      REDIS_HOST: fnbox-redis
+      KUBECONFIG: /home/django/.kube/config.local
+      HOST_IP: ${HOST_IP:-172.17.0.1}
+    volumes:
+      - fnbox_static_files:/app/static
+      - fnbox_media_files:/app/media
+      - fnbox_backend_logs:/app/logs
+      - ~/.kube/config:/home/django/.kube/config:ro
+    networks:
+      - fnbox-network
+    depends_on:
+      fnbox-postgres:
+        condition: service_healthy
+      fnbox-redis:
+        condition: service_healthy
+    restart: always
+
+  # Next.js Frontend
+  fnbox-frontend:
+    image: fnbox-frontend:latest
+    container_name: fnbox-frontend
+    env_file:
+      - frontend/.env.local
+    networks:
+      - fnbox-network
+    depends_on:
+      - fnbox-backend
+    restart: always
+
+  # Nginx Reverse Proxy
+  fnbox-nginx:
+    image: nginx:alpine
+    container_name: fnbox-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro  # For SSL certificates (optional)
+      - fnbox_static_files:/var/www/static:ro
+      - fnbox_media_files:/var/www/media:ro
+    networks:
+      - fnbox-network
+    depends_on:
+      - fnbox-backend
+      - fnbox-frontend
+    restart: always
+
+networks:
+  fnbox-network:
+    external: true
+    name: fnbox-network
+
+volumes:
+  fnbox_postgres_data:
+    driver: local
+  fnbox_redis_data:
+    driver: local
+  fnbox_static_files:
+    driver: local
+  fnbox_media_files:
+    driver: local
+  fnbox_backend_logs:
+    driver: local

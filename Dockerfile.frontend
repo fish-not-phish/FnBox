@@ -1,0 +1,74 @@
+# ================================
+# Production-Ready Next.js Frontend
+# ================================
+# Multi-stage build with standalone output for minimal size
+# Runs as non-root user for security
+
+FROM node:20-alpine AS deps
+
+# Install dependencies only when needed
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm install --production --no-package-lock && \
+    npm cache clean --force
+
+
+# ================================
+# Build stage
+# ================================
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
+COPY frontend/package*.json ./
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm install --no-package-lock
+
+# Copy source code
+COPY frontend/ .
+
+# Build arguments for runtime configuration
+ARG NEXT_PUBLIC_BASE_URL=http://localhost:8000/api/
+ARG NEXT_PUBLIC_BASE_URL_ACCOUNTS=http://localhost:8000/
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_BASE_URL_ACCOUNTS=$NEXT_PUBLIC_BASE_URL_ACCOUNTS
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build Next.js application with standalone output
+RUN npm run build
+
+
+# ================================
+# Final production image
+# ================================
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+# Set production environment
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
+
+# Copy necessary files from builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Set ownership
+RUN chown -R nextjs:nodejs /app
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Start Next.js
+CMD ["node", "server.js"]

@@ -1,0 +1,85 @@
+{% load i18n %}
+{% load allauth %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>{% trans "Sign In" %}</title>
+
+  <!-- Bootstrap -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+    crossorigin="anonymous"
+  >
+
+  <style>
+    :root {
+      --panel-red: #5A8C5E;
+      --panel-dark-green: #2e3626;
+      --panel-bg: #f4f6f8;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--panel-bg);
+      color: var(--panel-dark-green);
+      padding: 40px 0;
+    }
+
+    .form-signin {
+      width: 100%;
+      max-width: 360px;
+      padding: 24px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(20, 33, 66, 0.15);
+      text-align: center;
+    }
+
+    .btn-primary {
+      background-color: var(--panel-red);
+      border-color: var(--panel-red);
+      font-weight: 600;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background-color: #5A8C5E;
+      border-color: #8B5840;
+    }
+  </style>
+</head>
+
+<body>
+
+  <form method="post" class="form-signin">
+    {% csrf_token %}
+
+    <img
+      class="mb-4 img-fluid"
+      src="https://raw.githubusercontent.com/fish-not-phish/FnBox/refs/heads/main/fnbox-transparent.png"
+      alt="Company"
+      width="320"
+    >
+
+    <button type="submit" class="btn btn-lg btn-primary btn-block">
+      {% blocktrans with provider.name as provider %}
+        Sign in via {{ provider }}
+      {% endblocktrans %}
+    </button>
+
+  </form>
+
+</body>
+</html>
