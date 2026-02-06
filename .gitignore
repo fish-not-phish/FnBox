@@ -251,7 +251,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 test-scripts/
-migrations/
 
 # SSL certificates and private keys (nginx)
 nginx/ssl/*.pem
