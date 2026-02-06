@@ -170,6 +170,10 @@ FUNCTION_CPU_PERCENT=40 FUNCTION_MEMORY_PERCENT=40 ./setup.sh
 
 ### 2. Run Interactive Setup
 ```bash
+chmod +x setup.sh destroy.sh
+```
+
+```bash
 ./setup.sh
 ```
 
