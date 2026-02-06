@@ -129,7 +129,7 @@ Get FnBox running in **5 minutes**:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/fnbox.git
+git clone https://github.com/fish-not-phish/fnbox.git
 cd fnbox
 ```
 
