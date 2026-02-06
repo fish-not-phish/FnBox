@@ -107,12 +107,12 @@ FnBox is a self-hosted serverless functions platform that allows you to deploy, 
 **Minimum (Development/Testing):**
 - **CPU**: 2 cores
 - **RAM**: 4GB
-- **Disk**: 20GB free space
+- **Disk**: 50GB free space
 
 **Recommended (Small Production):**
 - **CPU**: 4-6 cores
 - **RAM**: 8-16GB
-- **Disk**: 50GB free space
+- **Disk**: 75GB free space
 
 **Optimal (Production):**
 - **CPU**: 8+ cores
