@@ -14,7 +14,7 @@ contextlib2==21.6.0
 cron_descriptor==2.0.6
 cryptography==46.0.4
 Django==5.2.10
-django-allauth==65.14.0
+django-allauth==65.14.3
 django-celery-beat==2.8.1
 django-cors-headers==4.9.0
 django-filter==25.2
