@@ -81,6 +81,13 @@ python manage.py update_site_domain || {
 }
 
 echo ""
+echo "==> Syncing Celery Beat periodic tasks..."
+python manage.py sync_beat_tasks || {
+    echo "ERROR: sync_beat_tasks failed"
+    exit 1
+}
+
+echo ""
 echo "==> Collecting static files..."
 python manage.py collectstatic --noinput || {
     echo "WARNING: collectstatic failed, continuing..."

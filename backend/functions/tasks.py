@@ -486,3 +486,78 @@ def invoke_function_task(self, function_uuid: str, event_data: dict, request_id:
             'error': str(e),
             'invocation_id': None
         }
+
+
+@shared_task(bind=True)
+def reload_kind_images_task(self):
+    """
+    Periodic task to ensure all fnbox images are loaded into the Kind cluster.
+    Checks which images are already loaded and loads any missing ones.
+
+    This runs periodically to handle cases where the cluster loses access to images
+    (e.g., after cluster restart, image pruning, or node reset).
+    """
+    import subprocess
+    from functions.kubernetes import RUNTIME_IMAGES
+
+    try:
+        cluster_name = getattr(settings, 'KIND_CLUSTER_NAME', 'fnbox-cluster')
+
+        # Get list of locally available images (format: repository:tag)
+        result = subprocess.run(
+            ['docker', 'images', '--format', '{{.Repository}}:{{.Tag}}'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        local_images = set(result.stdout.strip().split('\n'))
+
+        # Get required images from RUNTIME_IMAGES
+        required_images = set(RUNTIME_IMAGES.values())
+
+        # Find images that need to be loaded
+        missing_images = required_images - local_images
+
+        if not missing_images:
+            logger.info("[TASK] All fnbox images already available locally")
+            return {'success': True, 'loaded': [], 'skipped': len(required_images)}
+
+        logger.info(f"[TASK] Loading {len(missing_images)} missing images into Kind cluster")
+
+        loaded_images = []
+        failed_images = []
+
+        for image in missing_images:
+            try:
+                logger.info(f"[TASK] Loading image: {image}")
+                subprocess.run(
+                    ['kind', 'load', 'docker-image', image, '--name', cluster_name],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                loaded_images.append(image)
+                logger.info(f"[TASK] Successfully loaded {image}")
+            except subprocess.CalledProcessError as e:
+                logger.error(f"[TASK] Failed to load {image}: {e.stderr}")
+                failed_images.append(image)
+
+        if failed_images:
+            logger.warning(f"[TASK] Failed to load {len(failed_images)} images: {failed_images}")
+            return {
+                'success': False,
+                'loaded': loaded_images,
+                'failed': failed_images,
+                'error': f"Failed to load {len(failed_images)} images"
+            }
+
+        return {
+            'success': True,
+            'loaded': loaded_images,
+            'failed': failed_images,
+            'total_loaded': len(loaded_images)
+        }
+
+    except Exception as e:
+        logger.error(f"[TASK] Failed to reload Kind images: {str(e)}", exc_info=True)
+        return {'success': False, 'error': str(e)}

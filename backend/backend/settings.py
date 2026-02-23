@@ -331,6 +331,10 @@ else:
 # Kubernetes Configuration
 KUBERNETES_ENABLED = str_to_bool(os.environ.get('KUBERNETES_ENABLED', 'True'))
 KUBERNETES_NAMESPACE = os.environ.get('KUBERNETES_NAMESPACE', 'fnbox-functions')
+KIND_CLUSTER_NAME = os.environ.get('KIND_CLUSTER_NAME', 'fnbox-cluster')
+
+# Image reload schedule (in days) - set to 0 to disable
+KIND_IMAGE_RELOAD_INTERVAL_DAYS = int(os.environ.get('KIND_IMAGE_RELOAD_INTERVAL_DAYS', '1'))
 
 # Function Execution Backend
 # Options: 'kubernetes'

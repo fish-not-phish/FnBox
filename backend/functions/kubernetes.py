@@ -795,10 +795,21 @@ class KubernetesManager:
             spec=spec
         )
 
-        return self.apps_v1.create_namespaced_deployment(
-            namespace=self.namespace,
-            body=deployment
-        )
+        try:
+            return self.apps_v1.create_namespaced_deployment(
+                namespace=self.namespace,
+                body=deployment
+            )
+        except ApiException as e:
+            if e.status == 409:  # Already exists
+                self.apps_v1.replace_namespaced_deployment(
+                    name=name,
+                    namespace=self.namespace,
+                    body=deployment
+                )
+                logger.info(f"Updated deployment {name}")
+            else:
+                raise
 
     def _create_service(self, name: str, deployment_name: str):
         """Create Kubernetes Service for load balancing"""
@@ -820,10 +831,21 @@ class KubernetesManager:
             )
         )
 
-        return self.core_v1.create_namespaced_service(
-            namespace=self.namespace,
-            body=service
-        )
+        try:
+            return self.core_v1.create_namespaced_service(
+                namespace=self.namespace,
+                body=service
+            )
+        except ApiException as e:
+            if e.status == 409:  # Already exists
+                self.core_v1.replace_namespaced_service(
+                    name=name,
+                    namespace=self.namespace,
+                    body=service
+                )
+                logger.info(f"Updated service {name}")
+            else:
+                raise
 
     def _create_hpa(self, deployment_name: str):
         """
