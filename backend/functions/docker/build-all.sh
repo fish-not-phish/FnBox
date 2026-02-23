@@ -74,3 +74,13 @@ echo "All images built successfully!"
 echo
 echo "To push to registry, run:"
 echo "  docker push ${REGISTRY:-}fnbox-*"
+
+for IMAGE in \
+  fnbox-python:3.9 fnbox-python:3.10 fnbox-python:3.11 fnbox-python:3.12 fnbox-python:3.13 fnbox-python:3.14 \
+  fnbox-nodejs:20 fnbox-nodejs:24 fnbox-nodejs:25 \
+  fnbox-ruby:3.4 fnbox-java:27 \
+  fnbox-dotnet:8 fnbox-dotnet:9 fnbox-dotnet:10 \
+  fnbox-bash:5 fnbox-go:1.25
+do
+  kind load docker-image "$IMAGE" --name fnbox-cluster
+done

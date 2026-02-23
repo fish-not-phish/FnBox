@@ -467,6 +467,21 @@ EOF
 print_success ".env created with UID=${USER_UID}, GID=${USER_GID}, HOST_IP=${HOST_IP}"
 print_success "Database credentials added: DB_NAME=${DB_NAME}, DB_USER=${DB_USER}"
 
+# Fix kubeconfig volume mount path in docker-compose.yml
+# Docker compose doesn't expand ~ in volume bindings, so we need the full path
+print_info "Fixing kubeconfig mount path in docker-compose.yml..."
+KUBECONFIG_HOST_PATH=$(eval echo "~")/.kube/config
+
+if [ -f "$SCRIPT_DIR/docker-compose.yml" ]; then
+    # Replace ~/.kube/config with the full path
+    sed -i "s|~\/.kube/config:|$KUBECONFIG_HOST_PATH:|g" "$SCRIPT_DIR/docker-compose.yml"
+    sed -i "s|~\/.kube/config:|$KUBECONFIG_HOST_PATH:|g" "$SCRIPT_DIR/docker-compose.nginx.yml"
+    sed -i "s|~\/.kube/config:|$KUBECONFIG_HOST_PATH:|g" "$SCRIPT_DIR/docker-compose.traefik.yml"
+    print_success "kubeconfig mount path fixed: $KUBECONFIG_HOST_PATH"
+else
+    print_warning "docker-compose.yml not found, skipping kubeconfig mount fix"
+fi
+
 echo ""
 
 # ================================

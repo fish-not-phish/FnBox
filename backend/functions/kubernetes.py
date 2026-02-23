@@ -531,7 +531,7 @@ class KubernetesManager:
         container = client.V1Container(
             name="function",
             image=image,
-            image_pull_policy="IfNotPresent",  # Use local images
+            image_pull_policy="Never",  # Use only locally loaded images (via kind load)
             ports=[client.V1ContainerPort(container_port=8080)],
             resources=client.V1ResourceRequirements(
                 requests={
@@ -709,6 +709,7 @@ class KubernetesManager:
                     client.V1Container(
                         name="install-dependencies",
                         image=image,
+                        image_pull_policy="Never",  # Use only locally loaded images
                         command=install_cmd,
                         volume_mounts=[
                             client.V1VolumeMount(
