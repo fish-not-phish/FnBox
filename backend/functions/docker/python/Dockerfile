@@ -3,7 +3,11 @@ ARG PYTHON_VERSION=3.11
 
 FROM python:${PYTHON_VERSION}-slim
 
-# Install common packages
+# Install common packages and SSH client
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir \
     requests \
     urllib3 \

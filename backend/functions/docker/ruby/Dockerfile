@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     build-essential \
     libpq-dev \
+    openssh-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Install common gems

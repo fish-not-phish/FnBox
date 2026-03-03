@@ -3,7 +3,11 @@ ARG NODE_VERSION=20
 
 FROM node:${NODE_VERSION}-slim
 
-# Install common packages
+# Install common packages and SSH client
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssh-client \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN npm install -g \
     axios \
     aws-sdk \

@@ -11,7 +11,8 @@ RUN apk add --no-cache \
     ca-certificates \
     coreutils \
     grep \
-    sed
+    sed \
+    openssh-client
 
 # Create app directory
 WORKDIR /app

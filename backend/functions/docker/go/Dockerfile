@@ -8,7 +8,8 @@ RUN apk add --no-cache \
     git \
     ca-certificates \
     gcc \
-    musl-dev
+    musl-dev \
+    openssh-client
 
 # Create app directory
 WORKDIR /app
