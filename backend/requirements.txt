@@ -16,7 +16,7 @@ croniter==6.0.0
 cryptography==46.0.5
 Django==5.2.11
 django-allauth==65.14.3
-django-celery-beat==2.8.1
+django-celery-beat==2.9.0
 django-cors-headers==4.9.0
 django-filter==25.2
 django-ninja==1.5.3
